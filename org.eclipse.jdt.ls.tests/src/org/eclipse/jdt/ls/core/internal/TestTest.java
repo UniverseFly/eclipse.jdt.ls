@@ -71,14 +71,19 @@ public class TestTest extends AbstractProjectsManagerBasedTest {
 		importer = new EclipseProjectImporter();
 	}
 
+	@Override
+	protected File getSourceProjectDirectory() {
+		return new File("/");
+	}
+
 	@Test
 	public void importSimpleJavaProject() throws Exception {
 		String name = "myhello";
-		importProjects("eclipse/"+name);
+		importProjects("/Users/nole/Developer/jdt.ls/org.eclipse.jdt.ls.tests/projects/eclipse/"+name);
 		IProject project = getProject(name);
 		assertIsJavaProject(project);
 		// a test for https://github.com/redhat-developer/vscode-java/issues/244
-		importProjects("eclipse/" + name);
+		importProjects("/Users/nole/Developer/jdt.ls/org.eclipse.jdt.ls.tests/projects/eclipse/" + name);
 		project = getProject(name);
 		// var cu = (ICompilationUnit) JavaCore.create(project.getFile(new Path("src/java/Foo.java")));
 		// assertIsJavaProject(project);
@@ -92,6 +97,30 @@ public class TestTest extends AbstractProjectsManagerBasedTest {
 		// var results = requestor.proposals.stream().map(x -> x.toString()).collect(Collectors.toList());
 		// CoreASTProvider.getInstance().getAST(cu, CoreASTProvider.WAIT_YES, new NullProgressMonitor());
 		CompilationUnit astRoot = CoreASTProvider.getInstance().getAST(cu1, CoreASTProvider.WAIT_YES, new NullProgressMonitor());
+		var problems = astRoot.getProblems();
+        // var unit = (ICompilktionUnit) javaProject.findElement(new Path("hello/src/java/Foo.java"));
+	}
+
+	@Test
+	public void importComplexProject() throws Exception {
+		String name = "Closure-1-buggy/";
+		var projs = importProjects("/Users/nole/Developer/d4j-checkout/" + name);
+		IProject project = projs.get(0);
+		assertIsJavaProject(project);
+		// a test for https://github.com/redhat-developer/vscode-java/issues/244
+		// project = getProject(name);
+		var cu = (ICompilationUnit) JavaCore.create(project.getFile("src/com/google/javascript/jscomp/RemoveUnusedVars.java"));
+		// assertIsJavaProject(project);
+        // // var javaProject = JavaCore.create(project);
+        // // var children = javaProject.getChildren();
+        // // var cu = javaProject.getPackageFragments()[0].getCompilationUnits()[0];
+        // var requestor = new Requestor();
+		// var cu1 = (ICompilationUnit) JavaCore.create(project.getFile(new Path("src/java/Bar.java")));
+		// // var content = cu1.getSource();
+        // // cu.codeComplete(116, requestor);
+		// // var results = requestor.proposals.stream().map(x -> x.toString()).collect(Collectors.toList());
+		// // CoreASTProvider.getInstance().getAST(cu, CoreASTProvider.WAIT_YES, new NullProgressMonitor());
+		CompilationUnit astRoot = CoreASTProvider.getInstance().getAST(cu, CoreASTProvider.WAIT_YES, new NullProgressMonitor());
 		var problems = astRoot.getProblems();
         // var unit = (ICompilktionUnit) javaProject.findElement(new Path("hello/src/java/Foo.java"));
 	}
