@@ -33,9 +33,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
-import org.eclipse.jdt.internal.codeassist.InternalCompletionContext;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnFieldName;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnLocalName;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.handlers.CompletionResolveHandler;
@@ -47,59 +44,6 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionItemTag;
 import org.eclipse.lsp4j.Range;
-
-import org.eclipse.jdt.internal.codeassist.complete.CompletionJavadoc;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionNodeDetector;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionNodeFound;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnAnnotationOfType;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnArgumentName;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnBreakStatement;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnClassLiteralAccess;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnContinueStatement;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnExplicitConstructorCall;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnFieldName;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnFieldType;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnImportReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnJavadoc;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnJavadocAllocationExpression;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnJavadocFieldReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnJavadocMessageSend;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnJavadocModuleReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnJavadocParamNameReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnJavadocQualifiedTypeReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnJavadocSingleTypeReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnJavadocTag;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnJavadocTypeParamReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnKeyword;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnKeyword3;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnKeywordModuleDeclaration;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnKeywordModuleInfo;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnLocalName;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnMarkerAnnotationName;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnMemberAccess;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnMemberValueName;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnMessageSend;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnMessageSendName;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnMethodName;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnMethodReturnType;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnModuleDeclaration;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnModuleReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnPackageReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnPackageVisibilityReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnParameterizedQualifiedTypeReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnProvidesImplementationsQualifiedTypeReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnProvidesImplementationsSingleTypeReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnProvidesInterfacesQualifiedTypeReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnProvidesInterfacesSingleTypeReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnQualifiedAllocationExpression;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnQualifiedNameReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnQualifiedTypeReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnReferenceExpressionName;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnSingleNameReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnSingleTypeReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnStringLiteral;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnUsesQualifiedTypeReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnUsesSingleTypeReference;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -115,7 +59,6 @@ public final class CompletionProposalRequestor extends CompletionRequestor {
 	private boolean isComplete = true;
 	private PreferenceManager preferenceManager;
 	private CompletionProposalReplacementProvider proposalProvider;
-	private boolean isContextValid = true;
 
 	static class ProposalComparator implements Comparator<CompletionProposal> {
 
@@ -223,20 +166,20 @@ public final class CompletionProposalRequestor extends CompletionRequestor {
 
 	@Override
 	public void accept(CompletionProposal proposal) {
-		// if (isFiltered(proposal)) {
-		// 	return;
-		// }
+		if (isFiltered(proposal)) {
+			return;
+		}
 		if (!isIgnored(proposal.getKind())) {
-			// if (proposal.getKind() == CompletionProposal.POTENTIAL_METHOD_DECLARATION) {
-			// 	acceptPotentialMethodDeclaration(proposal);
-			// } else {
-			if (proposal.getKind() == CompletionProposal.PACKAGE_REF && unit.getParent() != null && String.valueOf(proposal.getCompletion()).equals(unit.getParent().getElementName())) {
-				// Hacky way to boost relevance of current package, for package completions, until
-				// https://bugs.eclipse.org/518140 is fixed
-				proposal.setRelevance(proposal.getRelevance() + 1);
+			if (proposal.getKind() == CompletionProposal.POTENTIAL_METHOD_DECLARATION) {
+				acceptPotentialMethodDeclaration(proposal);
+			} else {
+				if (proposal.getKind() == CompletionProposal.PACKAGE_REF && unit.getParent() != null && String.valueOf(proposal.getCompletion()).equals(unit.getParent().getElementName())) {
+					// Hacky way to boost relevance of current package, for package completions, until
+					// https://bugs.eclipse.org/518140 is fixed
+					proposal.setRelevance(proposal.getRelevance() + 1);
+				}
+				proposals.add(proposal);
 			}
-			proposals.add(proposal);
-			// }
 		}
 	}
 
@@ -310,61 +253,6 @@ public final class CompletionProposalRequestor extends CompletionRequestor {
 	public void acceptContext(CompletionContext context) {
 		super.acceptContext(context);
 		this.context = context;
-		var completionNode = ((InternalCompletionContext) context).getCompletionNode();
-		if (
-			completionNode instanceof CompletionOnAnnotationOfType
-			// | completionNode instanceof CompletionOnArgumentName
-			// | completionNode instanceof CompletionOnBreakStatement
-			// | completionNode instanceof CompletionOnClassLiteralAccess
-			// | completionNode instanceof CompletionOnContinueStatement
-			// | completionNode instanceof CompletionOnExplicitConstructorCall
-			// | completionNode instanceof CompletionOnFieldName
-			// | completionNode instanceof CompletionOnFieldType
-			// | completionNode instanceof CompletionOnImportReference
-			| completionNode instanceof CompletionOnJavadoc
-			| completionNode instanceof CompletionOnJavadocAllocationExpression
-			| completionNode instanceof CompletionOnJavadocFieldReference
-			| completionNode instanceof CompletionOnJavadocMessageSend
-			| completionNode instanceof CompletionOnJavadocModuleReference
-			| completionNode instanceof CompletionOnJavadocParamNameReference
-			| completionNode instanceof CompletionOnJavadocQualifiedTypeReference
-			| completionNode instanceof CompletionOnJavadocSingleTypeReference
-			| completionNode instanceof CompletionOnJavadocTag
-			| completionNode instanceof CompletionOnJavadocTypeParamReference
-			// | completionNode instanceof CompletionOnKeyword
-			// | completionNode instanceof CompletionOnKeyword3
-			// | completionNode instanceof CompletionOnKeywordModuleDeclaration
-			// | completionNode instanceof CompletionOnKeywordModuleInfo
-			| completionNode instanceof CompletionOnLocalName
-			// | completionNode instanceof CompletionOnMarkerAnnotationName
-			// | completionNode instanceof CompletionOnMemberAccess
-			// | completionNode instanceof CompletionOnMemberValueName
-			| completionNode instanceof CompletionOnMessageSend
-			| completionNode instanceof CompletionOnMessageSendName
-			| completionNode instanceof CompletionOnMethodName
-			// | completionNode instanceof CompletionOnMethodReturnType
-			| completionNode instanceof CompletionOnModuleDeclaration
-			// | completionNode instanceof CompletionOnModuleReference
-			// | completionNode instanceof CompletionOnPackageReference
-			// | completionNode instanceof CompletionOnPackageVisibilityReference
-			// | completionNode instanceof CompletionOnParameterizedQualifiedTypeReference
-			// | completionNode instanceof CompletionOnProvidesImplementationsQualifiedTypeReference
-			// | completionNode instanceof CompletionOnProvidesImplementationsSingleTypeReference
-			// | completionNode instanceof CompletionOnProvidesInterfacesQualifiedTypeReference
-			// | completionNode instanceof CompletionOnProvidesInterfacesSingleTypeReference
-			| completionNode instanceof CompletionOnQualifiedAllocationExpression
-			// | completionNode instanceof CompletionOnQualifiedNameReference
-			// | completionNode instanceof CompletionOnQualifiedTypeReference
-			// | completionNode instanceof CompletionOnReferenceExpressionName
-			// | completionNode instanceof CompletionOnSingleNameReference
-			// | completionNode instanceof CompletionOnSingleTypeReference
-			| completionNode instanceof CompletionOnStringLiteral
-			// | completionNode instanceof CompletionOnUsesQualifiedTypeReference
-			// | completionNode instanceof CompletionOnUsesSingleTypeReference
-			) {
-				this.isContextValid = false;
-				throw new RuntimeException();
-		}
 		response.setContext(context);
 		this.descriptionProvider = new CompletionProposalDescriptionProvider(unit, context);
 		this.proposalProvider = new CompletionProposalReplacementProvider(unit, context, response.getOffset(), preferenceManager.getPreferences(), preferenceManager.getClientPreferences());

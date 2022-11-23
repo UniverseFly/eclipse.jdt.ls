@@ -40,6 +40,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.CompletionProposal;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -222,6 +223,19 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 		lifeCycleHandler.didChange(changeParms);
 	}
 
+	@Test
+	public void testNewCompletion() throws Exception{
+		ICompilationUnit unit = getWorkingCopy(
+				"src/java/Foo.java",
+				"public class Foo {\n"+
+						"	void foo() {\n"+
+						"		Object x = ne\n"+
+						"	}\n"+
+				"}\n");
+		var list = newRequestCompletions(unit, "ne");
+		assertNotNull(list);
+	}
+
 	//FIXME Something very fishy here: when run from command line as part of the whole test suite,
 	//no completions are returned maybe 80% of the time if this method runs first in this class,
 	//i.e. if this method is named testCompletion_1. It seems to fail in the IDE too but *very*
@@ -233,10 +247,10 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 				"src/java/Foo.java",
 				"public class Foo {\n"+
 						"	void foo() {\n"+
-						"		Object x = ne\n"+
+						"		Objec\n"+
 						"	}\n"+
 				"}\n");
-		CompletionList list = requestCompletions(unit, "ne");
+		CompletionList list = requestCompletions(unit, "Objec");
 		assertNotNull(list);
 		assertFalse("No proposals were found",list.getItems().isEmpty());
 
@@ -3566,6 +3580,15 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 			.collect(Collectors.toList());
 		assertFalse("Lambda not found",items.isEmpty());
 		assertTrue(items.get(0).getTextEdit().getLeft().getNewText().matches("\\(\\$\\{1:\\w+\\}\\, \\$\\{2:\\w+\\}\\) -> \\$\\{0\\}"));
+	}
+
+	private List<CompletionProposal> newRequestCompletions(ICompilationUnit unit, String completeBehind) throws JavaModelException {
+		return newRequestCompletions(unit, completeBehind, 0);
+	}
+
+	private List<CompletionProposal> newRequestCompletions(ICompilationUnit unit, String completeBehind, int fromIndex) throws JavaModelException {
+		int[] loc = findCompletionLocation(unit, completeBehind, fromIndex);
+		return server.newCompletion(JsonMessageHelper.getParams(createCompletionRequest(unit, loc[0], loc[1]))).join();
 	}
 
 	private CompletionList requestCompletions(ICompilationUnit unit, String completeBehind) throws JavaModelException {

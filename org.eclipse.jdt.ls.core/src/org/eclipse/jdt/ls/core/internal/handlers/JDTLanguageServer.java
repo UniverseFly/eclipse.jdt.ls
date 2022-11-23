@@ -34,6 +34,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.CompletionProposal;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.ls.core.internal.BaseJDTLanguageServer;
@@ -563,6 +564,28 @@ public class JDTLanguageServer extends BaseJDTLanguageServer implements Language
 		CompletionHandler handler = new CompletionHandler(preferenceManager);
 		final IProgressMonitor[] monitors = new IProgressMonitor[1];
 		CompletableFuture<Either<List<CompletionItem>, CompletionList>> result = computeAsync((monitor) -> {
+			monitors[0] = monitor;
+			if (Boolean.getBoolean(JAVA_LSP_JOIN_ON_COMPLETION)) {
+				waitForLifecycleJobs(monitor);
+			}
+			return handler.completion(position, monitor);
+		});
+		result.join();
+		if (monitors[0].isCanceled()) {
+			result.cancel(true);
+		}
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.lsp4j.services.TextDocumentService#completion(org.eclipse.lsp4j.CompletionParams)
+	 */
+	// @Override
+	public CompletableFuture<List<CompletionProposal>> newCompletion(CompletionParams position) {
+		logInfo(">> document/newCompletion");
+		var handler = new NewCompletionHandler(preferenceManager);
+		final IProgressMonitor[] monitors = new IProgressMonitor[1];
+		var result = computeAsync((monitor) -> {
 			monitors[0] = monitor;
 			if (Boolean.getBoolean(JAVA_LSP_JOIN_ON_COMPLETION)) {
 				waitForLifecycleJobs(monitor);
