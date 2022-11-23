@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
@@ -26,6 +27,7 @@ import org.eclipse.core.runtime.ProgressMonitorWrapper;
 import org.eclipse.jdt.core.CompletionProposal;
 import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -33,6 +35,7 @@ import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.manipulation.SharedASTProviderCore;
+import org.eclipse.jdt.internal.codeassist.impl.AssistOptions;
 import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
 import org.eclipse.jdt.ls.core.internal.JDTEnvironmentUtils;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
@@ -120,26 +123,85 @@ public class CompletionHandler{
 			}
 		}
 
+		var options = JavaCore.getOptions();
+		options.put(JavaCore.CODEASSIST_SUGGEST_STATIC_IMPORTS, "disabled");
+		options.put(JavaCore.CODEASSIST_CAMEL_CASE_MATCH, "disabled");
+		options.put(JavaCore.CODEASSIST_SUBWORD_MATCH, "disabled");
+		options.put(JavaCore.CODEASSIST_SUBSTRING_MATCH, "disabled");
+		JavaCore.setOptions(options);
+		// AssistOptions
+		// argumentPrefixes: null
+		// argumentSuffixes: null
+		// camelCaseMatch: true
+		// checkDeprecation: false
+		// checkDiscouragedReference: false
+		// checkForbiddenReference: true
+		// checkVisibility: true
+		// fieldPrefixes: null
+		// fieldSuffixes: null
+		// forceImplicitQualification: false
+		// localPrefixes: null
+		// localSuffixes: null
+		// staticFieldPrefixes: null
+		// staticFieldSuffixes: null
+		// staticFinalFieldPrefixes: null
+		// staticFinalFieldSuffixes: null
+		// substringMatch: false
+		// subwordMatch: false
+		// suggestStaticImport: true
 		List<CompletionItem> proposals = new ArrayList<>();
 
 		final int offset = JsonRpcHelpers.toOffset(unit.getBuffer(), params.getPosition().getLine(), params.getPosition().getCharacter());
 		CompletionProposalRequestor collector = new CompletionProposalRequestor(unit, offset, manager);
+		collector.setIgnored(CompletionProposal.FIELD_REF, false);
+		collector.setIgnored(CompletionProposal.KEYWORD, false);
+		collector.setIgnored(CompletionProposal.LABEL_REF, false);
+		collector.setIgnored(CompletionProposal.LOCAL_VARIABLE_REF, false);
+		collector.setIgnored(CompletionProposal.METHOD_REF, false);
+		collector.setIgnored(CompletionProposal.PACKAGE_REF, false);
+		collector.setIgnored(CompletionProposal.TYPE_REF, false);
+		collector.setIgnored(CompletionProposal.METHOD_NAME_REFERENCE, false);
+		collector.setIgnored(CompletionProposal.ANNOTATION_ATTRIBUTE_REF, false);
+		collector.setIgnored(CompletionProposal.MODULE_REF, false);
+
+		collector.setIgnored(CompletionProposal.FIELD_IMPORT, true);
+		collector.setIgnored(CompletionProposal.METHOD_IMPORT, true);
+		collector.setIgnored(CompletionProposal.TYPE_IMPORT, true);
+
+		collector.setIgnored(CompletionProposal.METHOD_DECLARATION, true);
+		collector.setIgnored(CompletionProposal.ANONYMOUS_CLASS_DECLARATION, true);
+		collector.setIgnored(CompletionProposal.VARIABLE_DECLARATION, true);
+		collector.setIgnored(CompletionProposal.POTENTIAL_METHOD_DECLARATION, true);
+		collector.setIgnored(CompletionProposal.JAVADOC_FIELD_REF, true);
+		collector.setIgnored(CompletionProposal.JAVADOC_METHOD_REF, true);
+		collector.setIgnored(CompletionProposal.JAVADOC_TYPE_REF, true);
+		collector.setIgnored(CompletionProposal.JAVADOC_VALUE_REF, true);
+		collector.setIgnored(CompletionProposal.JAVADOC_PARAM_REF, true);
+		collector.setIgnored(CompletionProposal.JAVADOC_BLOCK_TAG, true);
+		collector.setIgnored(CompletionProposal.JAVADOC_INLINE_TAG, true);
+		collector.setIgnored(CompletionProposal.METHOD_REF_WITH_CASTED_RECEIVER, true);
+		collector.setIgnored(CompletionProposal.FIELD_REF_WITH_CASTED_RECEIVER, true);
+		collector.setIgnored(CompletionProposal.CONSTRUCTOR_INVOCATION, true);
+		collector.setIgnored(CompletionProposal.ANONYMOUS_CLASS_CONSTRUCTOR_INVOCATION, true);
+		collector.setIgnored(CompletionProposal.MODULE_DECLARATION, true);
+		collector.setIgnored(CompletionProposal.LAMBDA_EXPRESSION, true);
+
 		// Allow completions for unresolved types - since 3.3
-		collector.setAllowsRequiredProposals(CompletionProposal.FIELD_REF, CompletionProposal.TYPE_REF, true);
-		collector.setAllowsRequiredProposals(CompletionProposal.FIELD_REF, CompletionProposal.TYPE_IMPORT, true);
-		collector.setAllowsRequiredProposals(CompletionProposal.FIELD_REF, CompletionProposal.FIELD_IMPORT, true);
+		// collector.setAllowsRequiredProposals(CompletionProposal.FIELD_REF, CompletionProposal.TYPE_REF, true);
+		// collector.setAllowsRequiredProposals(CompletionProposal.FIELD_REF, CompletionProposal.TYPE_IMPORT, true);
+		// collector.setAllowsRequiredProposals(CompletionProposal.FIELD_REF, CompletionProposal.FIELD_IMPORT, true);
 
-		collector.setAllowsRequiredProposals(CompletionProposal.METHOD_REF, CompletionProposal.TYPE_REF, true);
-		collector.setAllowsRequiredProposals(CompletionProposal.METHOD_REF, CompletionProposal.TYPE_IMPORT, true);
-		collector.setAllowsRequiredProposals(CompletionProposal.METHOD_REF, CompletionProposal.METHOD_IMPORT, true);
+		// collector.setAllowsRequiredProposals(CompletionProposal.METHOD_REF, CompletionProposal.TYPE_REF, true);
+		// collector.setAllowsRequiredProposals(CompletionProposal.METHOD_REF, CompletionProposal.TYPE_IMPORT, true);
+		// collector.setAllowsRequiredProposals(CompletionProposal.METHOD_REF, CompletionProposal.METHOD_IMPORT, true);
 
-		collector.setAllowsRequiredProposals(CompletionProposal.CONSTRUCTOR_INVOCATION, CompletionProposal.TYPE_REF, true);
+		// collector.setAllowsRequiredProposals(CompletionProposal.CONSTRUCTOR_INVOCATION, CompletionProposal.TYPE_REF, true);
 
-		collector.setAllowsRequiredProposals(CompletionProposal.ANONYMOUS_CLASS_CONSTRUCTOR_INVOCATION, CompletionProposal.TYPE_REF, true);
-		collector.setAllowsRequiredProposals(CompletionProposal.ANONYMOUS_CLASS_DECLARATION, CompletionProposal.TYPE_REF, true);
+		// collector.setAllowsRequiredProposals(CompletionProposal.ANONYMOUS_CLASS_CONSTRUCTOR_INVOCATION, CompletionProposal.TYPE_REF, true);
+		// collector.setAllowsRequiredProposals(CompletionProposal.ANONYMOUS_CLASS_DECLARATION, CompletionProposal.TYPE_REF, true);
 
-		collector.setAllowsRequiredProposals(CompletionProposal.TYPE_REF, CompletionProposal.TYPE_REF, true);
-		collector.setFavoriteReferences(getFavoriteStaticMembers());
+		// collector.setAllowsRequiredProposals(CompletionProposal.TYPE_REF, CompletionProposal.TYPE_REF, true);
+		// collector.setFavoriteReferences(getFavoriteStaticMembers());
 
 		if (offset >-1 && !monitor.isCanceled()) {
 			IBuffer buffer = unit.getBuffer();
@@ -161,7 +223,7 @@ public class CompletionHandler{
 				};
 				try {
 					if (isIndexEngineEnabled()) {
-						unit.codeComplete(offset, collector, subMonitor);
+						unit.codeComplete(offset, collector, (IProgressMonitor) null);
 					} else {
 						ModelBasedCompletionEngine.codeComplete(unit, offset, collector, DefaultWorkingCopyOwner.PRIMARY, subMonitor);
 					}

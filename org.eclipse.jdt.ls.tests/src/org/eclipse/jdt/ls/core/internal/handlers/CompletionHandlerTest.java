@@ -233,10 +233,10 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 				"src/java/Foo.java",
 				"public class Foo {\n"+
 						"	void foo() {\n"+
-						"		Objec\n"+
+						"		Object x = ne\n"+
 						"	}\n"+
 				"}\n");
-		CompletionList list = requestCompletions(unit, "Objec");
+		CompletionList list = requestCompletions(unit, "ne");
 		assertNotNull(list);
 		assertFalse("No proposals were found",list.getItems().isEmpty());
 
