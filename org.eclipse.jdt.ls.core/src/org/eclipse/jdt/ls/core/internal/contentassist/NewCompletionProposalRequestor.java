@@ -232,71 +232,71 @@ public final class NewCompletionProposalRequestor extends CompletionRequestor {
 		}
 	}
 
-	// public List<CompletionItem> getCompletionItems() {
-	// 	//Sort the results by relevance 1st
-	// 	proposals.sort(new ProposalComparator(proposals.size()));
-	// 	List<CompletionItem> completionItems = new ArrayList<>(proposals.size());
-	// 	int maxCompletions = preferenceManager.getPreferences().getMaxCompletionResults();
-	// 	int limit = Math.min(proposals.size(), maxCompletions);
-	// 	if (proposals.size() > maxCompletions) {
-	// 		//we keep receiving completions past our capacity so that makes the whole result incomplete
-	// 		isComplete = false;
-	// 		response.setProposals(proposals.subList(0, limit));
-	// 	} else {
-	// 		response.setProposals(proposals);
-	// 	}
-	// 	CompletionResponses.store(response);
+	public List<CompletionItem> getCompletionItems() {
+		//Sort the results by relevance 1st
+		proposals.sort(new ProposalComparator(proposals.size()));
+		List<CompletionItem> completionItems = new ArrayList<>(proposals.size());
+		// int maxCompletions = preferenceManager.getPreferences().getMaxCompletionResults();
+		// int limit = Math.min(proposals.size(), maxCompletions);
+		// if (proposals.size() > maxCompletions) {
+		// 	//we keep receiving completions past our capacity so that makes the whole result incomplete
+		// 	isComplete = false;
+		// 	response.setProposals(proposals.subList(0, limit));
+		// } else {
+		// 	response.setProposals(proposals);
+		// }
+		CompletionResponses.store(response);
 
-	// 	//Let's compute replacement texts for the most relevant results only
-	// 	for (int i = 0; i < limit; i++) {
-	// 		CompletionProposal proposal = proposals.get(i);
-	// 		try {
-	// 			CompletionItem item = toCompletionItem(proposal, i);
-	// 			completionItems.add(item);
-	// 		} catch (Exception e) {
-	// 			JavaLanguageServerPlugin.logException(e.getMessage(), e);
-	// 		}
-	// 	}
-	// 	return completionItems;
-	// }
+		//Let's compute replacement texts for the most relevant results only
+		for (int i = 0; i < proposals.size(); i++) {
+			CompletionProposal proposal = proposals.get(i);
+			try {
+				CompletionItem item = toCompletionItem(proposal, i);
+				completionItems.add(item);
+			} catch (Exception e) {
+				JavaLanguageServerPlugin.logException(e.getMessage(), e);
+			}
+		}
+		return completionItems;
+	}
 
-	// public CompletionItem toCompletionItem(CompletionProposal proposal, int index) {
-	// 	final CompletionItem $ = new CompletionItem();
-	// 	$.setKind(mapKind(proposal));
-	// 	if (Flags.isDeprecated(proposal.getFlags())) {
-	// 		if (preferenceManager.getClientPreferences().isCompletionItemTagSupported()) {
-	// 			$.setTags(List.of(CompletionItemTag.Deprecated));
-	// 		}
-	// 		else {
-	// 			$.setDeprecated(true);
-	// 		}
-	// 	}
-	// 	Map<String, String> data = new HashMap<>();
-	// 	// append data field so that resolve request can use it.
-	// 	data.put(CompletionResolveHandler.DATA_FIELD_URI, uri);
-	// 	data.put(CompletionResolveHandler.DATA_FIELD_REQUEST_ID, String.valueOf(response.getId()));
-	// 	data.put(CompletionResolveHandler.DATA_FIELD_PROPOSAL_ID, String.valueOf(index));
-	// 	$.setData(data);
-	// 	this.descriptionProvider.updateDescription(proposal, $);
-	// 	$.setSortText(SortTextHelper.computeSortText(proposal));
-	// 	proposalProvider.updateReplacement(proposal, $, '\0');
-	// 	// Make sure `filterText` matches `textEdit`
-	// 	// See https://github.com/eclipse/eclipse.jdt.ls/issues/1348
-	// 	if ($.getTextEdit() != null) {
-	// 		String newText = $.getTextEdit().isLeft() ? $.getTextEdit().getLeft().getNewText() : $.getTextEdit().getRight().getNewText();
-	// 		Range range = $.getTextEdit().isLeft() ? $.getTextEdit().getLeft().getRange() : ($.getTextEdit().getRight().getInsert() != null ? $.getTextEdit().getRight().getInsert() : $.getTextEdit().getRight().getReplace());
-	// 		if (proposal.getKind() == CompletionProposal.TYPE_REF && range != null && newText != null) {
-	// 			$.setFilterText(newText);
-	// 		}
-	// 	}
-	// 	if (preferenceManager.getPreferences().isSignatureHelpEnabled()) {
-	// 		String onSelectedCommand = preferenceManager.getClientPreferences().getCompletionItemCommand();
-	// 		if (!onSelectedCommand.isEmpty()) {
-	// 			$.setCommand(new Command("Command triggered for completion", onSelectedCommand));
-	// 		}
-	// 	}
-	// 	return $;
-	// }
+	public CompletionItem toCompletionItem(CompletionProposal proposal, int index) {
+		final CompletionItem $ = new CompletionItem();
+		$.setKind(mapKind(proposal));
+		if (Flags.isDeprecated(proposal.getFlags())) {
+			if (preferenceManager.getClientPreferences().isCompletionItemTagSupported()) {
+				$.setTags(List.of(CompletionItemTag.Deprecated));
+			}
+			else {
+				$.setDeprecated(true);
+			}
+		}
+		Map<String, String> data = new HashMap<>();
+		// append data field so that resolve request can use it.
+		data.put(CompletionResolveHandler.DATA_FIELD_URI, uri);
+		data.put(CompletionResolveHandler.DATA_FIELD_REQUEST_ID, String.valueOf(response.getId()));
+		data.put(CompletionResolveHandler.DATA_FIELD_PROPOSAL_ID, String.valueOf(index));
+		$.setData(data);
+		this.descriptionProvider.updateDescription(proposal, $);
+		$.setSortText(SortTextHelper.computeSortText(proposal));
+		proposalProvider.updateReplacement(proposal, $, '\0');
+		// Make sure `filterText` matches `textEdit`
+		// See https://github.com/eclipse/eclipse.jdt.ls/issues/1348
+		if ($.getTextEdit() != null) {
+			String newText = $.getTextEdit().isLeft() ? $.getTextEdit().getLeft().getNewText() : $.getTextEdit().getRight().getNewText();
+			Range range = $.getTextEdit().isLeft() ? $.getTextEdit().getLeft().getRange() : ($.getTextEdit().getRight().getInsert() != null ? $.getTextEdit().getRight().getInsert() : $.getTextEdit().getRight().getReplace());
+			if (proposal.getKind() == CompletionProposal.TYPE_REF && range != null && newText != null) {
+				$.setFilterText(newText);
+			}
+		}
+		if (preferenceManager.getPreferences().isSignatureHelpEnabled()) {
+			String onSelectedCommand = preferenceManager.getClientPreferences().getCompletionItemCommand();
+			if (!onSelectedCommand.isEmpty()) {
+				$.setCommand(new Command("Command triggered for completion", onSelectedCommand));
+			}
+		}
+		return $;
+	}
 
 	@Override
 	public void acceptContext(CompletionContext context) {
@@ -363,66 +363,66 @@ public final class NewCompletionProposalRequestor extends CompletionRequestor {
 	}
 
 
-	// private CompletionItemKind mapKind(final CompletionProposal proposal) {
-	// 	//When a new CompletionItemKind is added, don't forget to update SUPPORTED_KINDS
-	// 	int kind = proposal.getKind();
-	// 	int flags = proposal.getFlags();
-	// 	switch (kind) {
-	// 	case CompletionProposal.ANONYMOUS_CLASS_CONSTRUCTOR_INVOCATION:
-	// 	case CompletionProposal.CONSTRUCTOR_INVOCATION:
-	// 		return CompletionItemKind.Constructor;
-	// 	case CompletionProposal.ANONYMOUS_CLASS_DECLARATION:
-	// 	case CompletionProposal.TYPE_REF:
-	// 		if (Flags.isInterface(flags)) {
-	// 			return CompletionItemKind.Interface;
-	// 		} else if (Flags.isEnum(flags)) {
-	// 			return CompletionItemKind.Enum;
-	// 		}
-	// 		return CompletionItemKind.Class;
-	// 	case CompletionProposal.FIELD_IMPORT:
-	// 	case CompletionProposal.METHOD_IMPORT:
-	// 	case CompletionProposal.PACKAGE_REF:
-	// 	case CompletionProposal.TYPE_IMPORT:
-	// 	case CompletionProposal.MODULE_DECLARATION:
-	// 	case CompletionProposal.MODULE_REF:
-	// 		return CompletionItemKind.Module;
-	// 	case CompletionProposal.FIELD_REF:
-	// 		if (Flags.isEnum(flags)) {
-	// 			return CompletionItemKind.EnumMember;
-	// 		}
-	// 		if (Flags.isStatic(flags) && Flags.isFinal(flags)) {
-	// 			return CompletionItemKind.Constant;
-	// 		}
-	// 		return CompletionItemKind.Field;
-	// 	case CompletionProposal.FIELD_REF_WITH_CASTED_RECEIVER:
-	// 		return CompletionItemKind.Field;
-	// 	case CompletionProposal.KEYWORD:
-	// 		return CompletionItemKind.Keyword;
-	// 	case CompletionProposal.LABEL_REF:
-	// 		return CompletionItemKind.Reference;
-	// 	case CompletionProposal.LOCAL_VARIABLE_REF:
-	// 	case CompletionProposal.VARIABLE_DECLARATION:
-	// 		return CompletionItemKind.Variable;
-	// 	case CompletionProposal.METHOD_DECLARATION:
-	// 	case CompletionProposal.METHOD_REF:
-	// 	case CompletionProposal.METHOD_REF_WITH_CASTED_RECEIVER:
-	// 	case CompletionProposal.METHOD_NAME_REFERENCE:
-	// 	case CompletionProposal.POTENTIAL_METHOD_DECLARATION:
-	// 	case CompletionProposal.LAMBDA_EXPRESSION:
-	// 		return CompletionItemKind.Method;
-	// 		//text
-	// 	case CompletionProposal.ANNOTATION_ATTRIBUTE_REF:
-	// 	case CompletionProposal.JAVADOC_BLOCK_TAG:
-	// 	case CompletionProposal.JAVADOC_FIELD_REF:
-	// 	case CompletionProposal.JAVADOC_INLINE_TAG:
-	// 	case CompletionProposal.JAVADOC_METHOD_REF:
-	// 	case CompletionProposal.JAVADOC_PARAM_REF:
-	// 	case CompletionProposal.JAVADOC_TYPE_REF:
-	// 	case CompletionProposal.JAVADOC_VALUE_REF:
-	// 	default:
-	// 		return CompletionItemKind.Text;
-	// 	}
-	// }
+	private CompletionItemKind mapKind(final CompletionProposal proposal) {
+		//When a new CompletionItemKind is added, don't forget to update SUPPORTED_KINDS
+		int kind = proposal.getKind();
+		int flags = proposal.getFlags();
+		switch (kind) {
+		case CompletionProposal.ANONYMOUS_CLASS_CONSTRUCTOR_INVOCATION:
+		case CompletionProposal.CONSTRUCTOR_INVOCATION:
+			return CompletionItemKind.Constructor;
+		case CompletionProposal.ANONYMOUS_CLASS_DECLARATION:
+		case CompletionProposal.TYPE_REF:
+			if (Flags.isInterface(flags)) {
+				return CompletionItemKind.Interface;
+			} else if (Flags.isEnum(flags)) {
+				return CompletionItemKind.Enum;
+			}
+			return CompletionItemKind.Class;
+		case CompletionProposal.FIELD_IMPORT:
+		case CompletionProposal.METHOD_IMPORT:
+		case CompletionProposal.PACKAGE_REF:
+		case CompletionProposal.TYPE_IMPORT:
+		case CompletionProposal.MODULE_DECLARATION:
+		case CompletionProposal.MODULE_REF:
+			return CompletionItemKind.Module;
+		case CompletionProposal.FIELD_REF:
+			if (Flags.isEnum(flags)) {
+				return CompletionItemKind.EnumMember;
+			}
+			if (Flags.isStatic(flags) && Flags.isFinal(flags)) {
+				return CompletionItemKind.Constant;
+			}
+			return CompletionItemKind.Field;
+		case CompletionProposal.FIELD_REF_WITH_CASTED_RECEIVER:
+			return CompletionItemKind.Field;
+		case CompletionProposal.KEYWORD:
+			return CompletionItemKind.Keyword;
+		case CompletionProposal.LABEL_REF:
+			return CompletionItemKind.Reference;
+		case CompletionProposal.LOCAL_VARIABLE_REF:
+		case CompletionProposal.VARIABLE_DECLARATION:
+			return CompletionItemKind.Variable;
+		case CompletionProposal.METHOD_DECLARATION:
+		case CompletionProposal.METHOD_REF:
+		case CompletionProposal.METHOD_REF_WITH_CASTED_RECEIVER:
+		case CompletionProposal.METHOD_NAME_REFERENCE:
+		case CompletionProposal.POTENTIAL_METHOD_DECLARATION:
+		case CompletionProposal.LAMBDA_EXPRESSION:
+			return CompletionItemKind.Method;
+			//text
+		case CompletionProposal.ANNOTATION_ATTRIBUTE_REF:
+		case CompletionProposal.JAVADOC_BLOCK_TAG:
+		case CompletionProposal.JAVADOC_FIELD_REF:
+		case CompletionProposal.JAVADOC_INLINE_TAG:
+		case CompletionProposal.JAVADOC_METHOD_REF:
+		case CompletionProposal.JAVADOC_PARAM_REF:
+		case CompletionProposal.JAVADOC_TYPE_REF:
+		case CompletionProposal.JAVADOC_VALUE_REF:
+		default:
+			return CompletionItemKind.Text;
+		}
+	}
 
 	@Override
 	public void setIgnored(int completionProposalKind, boolean ignore) {

@@ -30,6 +30,7 @@ import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.contentassist.CompletionProposalRequestor;
 import org.eclipse.jdt.ls.core.internal.contentassist.JavadocCompletionProposal;
+import org.eclipse.jdt.ls.core.internal.contentassist.NewCompletionProposalRequestor;
 import org.eclipse.jdt.ls.core.internal.contentassist.SnippetCompletionProposal;
 import org.eclipse.jdt.ls.core.internal.contentassist.SortTextHelper;
 import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
@@ -69,9 +70,9 @@ public class NewCompletionHandler{
 		this.manager = manager;
 	}
 
-	public List<CompletionProposal> completion(CompletionParams params,
+	public List<CompletionItem> completion(CompletionParams params,
 			IProgressMonitor monitor) {
-		List<CompletionProposal> $ = null;
+		List<CompletionItem> $ = null;
 		try {
 			ICompilationUnit unit = JDTUtils.resolveCompilationUnit(params.getTextDocument().getUri());
 			$ = this.computeContentAssist(unit, params, monitor);
@@ -98,7 +99,7 @@ public class NewCompletionHandler{
 		// return Either.forRight($);
 	}
 
-	private List<CompletionProposal> computeContentAssist(ICompilationUnit unit, CompletionParams params, IProgressMonitor monitor) throws JavaModelException {
+	private List<CompletionItem> computeContentAssist(ICompilationUnit unit, CompletionParams params, IProgressMonitor monitor) throws JavaModelException {
 		CompletionResponses.clear();
 		if (unit == null) {
 			return null;
@@ -141,7 +142,7 @@ public class NewCompletionHandler{
 		List<CompletionItem> proposals = new ArrayList<>();
 
 		final int offset = JsonRpcHelpers.toOffset(unit.getBuffer(), params.getPosition().getLine(), params.getPosition().getCharacter());
-		CompletionProposalRequestor collector = new CompletionProposalRequestor(unit, offset, manager);
+		NewCompletionProposalRequestor collector = new NewCompletionProposalRequestor(unit, offset, manager);
 		collector.setIgnored(CompletionProposal.FIELD_REF, false);
 		collector.setIgnored(CompletionProposal.KEYWORD, false);
 		collector.setIgnored(CompletionProposal.LABEL_REF, false);
@@ -216,7 +217,10 @@ public class NewCompletionHandler{
 					} else {
 						ModelBasedCompletionEngine.codeComplete(unit, offset, collector, DefaultWorkingCopyOwner.PRIMARY, subMonitor);
 					}
-					// proposals.addAll(collector.getCompletionItems());
+					if (!collector.getIsContextValid()) {
+						return null;
+					}
+					proposals.addAll(collector.getCompletionItems());
 					// if (isSnippetStringSupported() && !UNSUPPORTED_RESOURCES.contains(unit.getResource().getName())) {
 					// 	proposals.addAll(SnippetCompletionProposal.getSnippets(unit, collector.getContext(), subMonitor));
 					// }
@@ -229,7 +233,8 @@ public class NewCompletionHandler{
 		// proposals.sort(PROPOSAL_COMPARATOR);
 		// CompletionList list = new CompletionList(proposals);
 		// list.setIsIncomplete(!collector.isComplete() || completionForConstructor);
-		return collector.getProposals();
+		// return collector.getProposals();
+		return proposals;
 	}
 
 	private String[] getFavoriteStaticMembers() {
