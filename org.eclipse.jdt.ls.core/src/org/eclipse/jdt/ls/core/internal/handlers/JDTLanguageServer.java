@@ -143,6 +143,7 @@ import org.eclipse.lsp4j.extended.ProjectBuildParams;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.services.JsonDelegate;
+import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.proposed.InlayHint;
 import org.eclipse.lsp4j.proposed.InlayHintParams;
 import org.eclipse.lsp4j.proposed.InlayHintProvider;
@@ -581,6 +582,7 @@ public class JDTLanguageServer extends BaseJDTLanguageServer implements Language
 	 * @see org.eclipse.lsp4j.services.TextDocumentService#completion(org.eclipse.lsp4j.CompletionParams)
 	 */
 	// @Override
+	@JsonRequest
 	public CompletableFuture<List<CompletionProposal>> newCompletion(CompletionParams position) {
 		logInfo(">> document/newCompletion");
 		var handler = new NewCompletionHandler(preferenceManager);

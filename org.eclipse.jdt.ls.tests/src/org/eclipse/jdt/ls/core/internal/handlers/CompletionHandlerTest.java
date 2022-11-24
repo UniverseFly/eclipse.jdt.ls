@@ -112,6 +112,21 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 					"    \"jsonrpc\": \"2.0\"\n" +
 					"}";
 
+	private static String NEW_COMPLETION_TEMPLATE =
+			"{\n" +
+					"    \"id\": \"1\",\n" +
+					"    \"method\": \"newCompletion\",\n" +
+					"    \"params\": {\n" +
+					"        \"textDocument\": {\n" +
+					"            \"uri\": \"${file}\"\n" +
+					"        },\n" +
+					"        \"position\": {\n" +
+					"            \"line\": ${line},\n" +
+					"            \"character\": ${char}\n" +
+					"        }\n" +
+					"    },\n" +
+					"    \"jsonrpc\": \"2.0\"\n" +
+					"}";
 	@Before
 	public void setUp() {
 		mockLSP3Client();
@@ -3588,7 +3603,7 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 
 	private List<CompletionProposal> newRequestCompletions(ICompilationUnit unit, String completeBehind, int fromIndex) throws JavaModelException {
 		int[] loc = findCompletionLocation(unit, completeBehind, fromIndex);
-		return server.newCompletion(JsonMessageHelper.getParams(createCompletionRequest(unit, loc[0], loc[1]))).join();
+		return server.newCompletion(JsonMessageHelper.getParams(newCreateCompletionRequest(unit, loc[0], loc[1]))).join();
 	}
 
 	private CompletionList requestCompletions(ICompilationUnit unit, String completeBehind) throws JavaModelException {
@@ -3602,6 +3617,12 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 
 	private String createCompletionRequest(ICompilationUnit unit, int line, int kar) {
 		return COMPLETION_TEMPLATE.replace("${file}", JDTUtils.toURI(unit))
+				.replace("${line}", String.valueOf(line))
+				.replace("${char}", String.valueOf(kar));
+	}
+
+	private String newCreateCompletionRequest(ICompilationUnit unit, int line, int kar) {
+		return NEW_COMPLETION_TEMPLATE.replace("${file}", JDTUtils.toURI(unit))
 				.replace("${line}", String.valueOf(line))
 				.replace("${char}", String.valueOf(kar));
 	}
