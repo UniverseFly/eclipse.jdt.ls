@@ -218,7 +218,8 @@ public class NewCompletionHandler{
 					} else {
 						ModelBasedCompletionEngine.codeComplete(unit, offset, collector, DefaultWorkingCopyOwner.PRIMARY, subMonitor);
 					}
-					if (!collector.getIsContextValid()) {
+					final var token = collector.getContext().getToken();
+					if (!collector.getIsContextValid() || token == null || token.length == 0) {
 						return null;
 					}
 					proposals.addAll(collector.getCompletionItems());

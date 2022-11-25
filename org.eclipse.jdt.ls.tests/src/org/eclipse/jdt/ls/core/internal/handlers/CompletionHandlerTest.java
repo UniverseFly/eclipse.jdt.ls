@@ -252,6 +252,45 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 		assertNotNull(list);
 	}
 
+	@Test
+	public void testNewCompletion_paren() throws Exception{
+		ICompilationUnit unit = getWorkingCopy(
+				"src/java/Foo.java",
+				"public class Foo {\n"+
+						"	void foo() {\n"+
+						"		if (\n" +
+						"	}\n"+
+				"}\n");
+		var list = newRequestCompletions(unit, "if (");
+		assertNull(list);
+	}
+
+	@Test
+	public void testNewCompletion_comment() throws Exception{
+		ICompilationUnit unit = getWorkingCopy(
+				"src/java/Foo.java",
+				"public class Foo {\n"+
+						"	void foo() {\n"+
+						"		if (/*\n" +
+						"	}\n"+
+				"}\n");
+		var list = newRequestCompletions(unit, "if (/*");
+		assertNull(list);
+	}
+
+	@Test
+	public void testNewCompletion_decl() throws Exception{
+		ICompilationUnit unit = getWorkingCopy(
+				"src/java/Foo.java",
+				"public class Foo {\n"+
+						"	void foo() {\n"+
+						"		Object ob\n" +
+						"	}\n"+
+				"}\n");
+		var list = newRequestCompletions(unit, "Object ob");
+		assertNull(list);
+	}
+
 	//FIXME Something very fishy here: when run from command line as part of the whole test suite,
 	//no completions are returned maybe 80% of the time if this method runs first in this class,
 	//i.e. if this method is named testCompletion_1. It seems to fail in the IDE too but *very*

@@ -88,6 +88,7 @@ import org.eclipse.jdt.internal.codeassist.complete.CompletionOnSingleTypeRefere
 import org.eclipse.jdt.internal.codeassist.complete.CompletionOnStringLiteral;
 import org.eclipse.jdt.internal.codeassist.complete.CompletionOnUsesQualifiedTypeReference;
 import org.eclipse.jdt.internal.codeassist.complete.CompletionOnUsesSingleTypeReference;
+import org.eclipse.jdt.internal.codeassist.complete.InvalidCursorLocation;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -106,6 +107,7 @@ public final class NewCompletionProposalRequestor extends CompletionRequestor {
 	private PreferenceManager preferenceManager;
 	private CompletionProposalReplacementProvider proposalProvider;
 	private boolean isContextValid = true;
+	private int contextAcceptCount = 0;
 
     public boolean getIsContextValid() {
         return isContextValid;
@@ -313,8 +315,6 @@ public final class NewCompletionProposalRequestor extends CompletionRequestor {
 
 	@Override
 	public void acceptContext(CompletionContext context) {
-		super.acceptContext(context);
-		this.context = context;
 		var completionNode = ((InternalCompletionContext) context).getCompletionNode();
 		if (
 			completionNode instanceof CompletionOnAnnotationOfType
@@ -368,8 +368,12 @@ public final class NewCompletionProposalRequestor extends CompletionRequestor {
 			// | completionNode instanceof CompletionOnUsesSingleTypeReference
 			) {
 				this.isContextValid = false;
-				throw new RuntimeException();
+				throw new InvalidCursorLocation("No Completion for " + completionNode.toString());
 		}
+		contextAcceptCount += 1;
+		assert contextAcceptCount == 1;
+		super.acceptContext(context);
+		this.context = context;
 		response.setContext(context);
 		this.descriptionProvider = new CompletionProposalDescriptionProvider(unit, context);
 		this.proposalProvider = new CompletionProposalReplacementProvider(unit, context, response.getOffset(), preferenceManager.getPreferences(), preferenceManager.getClientPreferences());
