@@ -253,6 +253,19 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 	}
 
 	@Test
+	public void testNewCompletion_number() throws Exception{
+		ICompilationUnit unit = getWorkingCopy(
+				"src/java/Foo.java",
+				"public class Foo {\n"+
+						"	void foo() {\n"+
+						"		int x = 15\n"+
+						"	}\n"+
+				"}\n");
+		var list = newRequestCompletions(unit, "15");
+		assertNull(list);
+	}
+
+	@Test
 	public void testNewCompletion_paren() throws Exception{
 		ICompilationUnit unit = getWorkingCopy(
 				"src/java/Foo.java",
