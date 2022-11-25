@@ -56,6 +56,7 @@ import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.jdt.ls.core.internal.TextEditUtil;
 import org.eclipse.jdt.ls.core.internal.WorkspaceHelper;
 import org.eclipse.jdt.ls.core.internal.contentassist.JavadocCompletionProposal;
+import org.eclipse.jdt.ls.core.internal.contentassist.NewCompletionItem;
 import org.eclipse.jdt.ls.core.internal.preferences.ClientPreferences;
 import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
 import org.eclipse.jdt.ls.core.internal.preferences.Preferences;
@@ -3597,11 +3598,11 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 		assertTrue(items.get(0).getTextEdit().getLeft().getNewText().matches("\\(\\$\\{1:\\w+\\}\\, \\$\\{2:\\w+\\}\\) -> \\$\\{0\\}"));
 	}
 
-	private List<CompletionProposal> newRequestCompletions(ICompilationUnit unit, String completeBehind) throws JavaModelException {
+	private List<NewCompletionItem> newRequestCompletions(ICompilationUnit unit, String completeBehind) throws JavaModelException {
 		return newRequestCompletions(unit, completeBehind, 0);
 	}
 
-	private List<CompletionProposal> newRequestCompletions(ICompilationUnit unit, String completeBehind, int fromIndex) throws JavaModelException {
+	private List<NewCompletionItem> newRequestCompletions(ICompilationUnit unit, String completeBehind, int fromIndex) throws JavaModelException {
 		int[] loc = findCompletionLocation(unit, completeBehind, fromIndex);
 		return server.newCompletion(JsonMessageHelper.getParams(newCreateCompletionRequest(unit, loc[0], loc[1]))).join();
 	}

@@ -30,6 +30,7 @@ import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.contentassist.CompletionProposalRequestor;
 import org.eclipse.jdt.ls.core.internal.contentassist.JavadocCompletionProposal;
+import org.eclipse.jdt.ls.core.internal.contentassist.NewCompletionItem;
 import org.eclipse.jdt.ls.core.internal.contentassist.NewCompletionProposalRequestor;
 import org.eclipse.jdt.ls.core.internal.contentassist.SnippetCompletionProposal;
 import org.eclipse.jdt.ls.core.internal.contentassist.SortTextHelper;
@@ -70,9 +71,9 @@ public class NewCompletionHandler{
 		this.manager = manager;
 	}
 
-	public List<CompletionItem> completion(CompletionParams params,
+	public List<NewCompletionItem> completion(CompletionParams params,
 			IProgressMonitor monitor) {
-		List<CompletionItem> $ = null;
+		List<NewCompletionItem> $ = null;
 		try {
 			ICompilationUnit unit = JDTUtils.resolveCompilationUnit(params.getTextDocument().getUri());
 			$ = this.computeContentAssist(unit, params, monitor);
@@ -99,7 +100,7 @@ public class NewCompletionHandler{
 		// return Either.forRight($);
 	}
 
-	private List<CompletionItem> computeContentAssist(ICompilationUnit unit, CompletionParams params, IProgressMonitor monitor) throws JavaModelException {
+	private List<NewCompletionItem> computeContentAssist(ICompilationUnit unit, CompletionParams params, IProgressMonitor monitor) throws JavaModelException {
 		CompletionResponses.clear();
 		if (unit == null) {
 			return null;
@@ -139,7 +140,7 @@ public class NewCompletionHandler{
 		// substringMatch: false
 		// subwordMatch: false
 		// suggestStaticImport: true
-		List<CompletionItem> proposals = new ArrayList<>();
+		List<NewCompletionItem> proposals = new ArrayList<>();
 
 		final int offset = JsonRpcHelpers.toOffset(unit.getBuffer(), params.getPosition().getLine(), params.getPosition().getCharacter());
 		NewCompletionProposalRequestor collector = new NewCompletionProposalRequestor(unit, offset, manager);

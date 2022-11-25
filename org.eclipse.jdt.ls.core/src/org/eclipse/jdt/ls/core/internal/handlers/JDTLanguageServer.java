@@ -49,6 +49,7 @@ import org.eclipse.jdt.ls.core.internal.JobHelpers;
 import org.eclipse.jdt.ls.core.internal.LanguageServerWorkingCopyOwner;
 import org.eclipse.jdt.ls.core.internal.ServiceStatus;
 import org.eclipse.jdt.ls.core.internal.codemanipulation.GenerateGetterSetterOperation.AccessorField;
+import org.eclipse.jdt.ls.core.internal.contentassist.NewCompletionItem;
 import org.eclipse.jdt.ls.core.internal.handlers.FindLinksHandler.FindLinksParams;
 import org.eclipse.jdt.ls.core.internal.handlers.GenerateAccessorsHandler.AccessorCodeActionParams;
 import org.eclipse.jdt.ls.core.internal.handlers.GenerateAccessorsHandler.GenerateAccessorsParams;
@@ -583,7 +584,7 @@ public class JDTLanguageServer extends BaseJDTLanguageServer implements Language
 	 */
 	// @Override
 	@JsonRequest
-	public CompletableFuture<List<CompletionProposal>> newCompletion(CompletionParams position) {
+	public CompletableFuture<List<NewCompletionItem>> newCompletion(CompletionParams position) {
 		logInfo(">> document/newCompletion");
 		var handler = new NewCompletionHandler(preferenceManager);
 		final IProgressMonitor[] monitors = new IProgressMonitor[1];
