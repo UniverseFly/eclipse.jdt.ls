@@ -269,10 +269,15 @@ public final class NewCompletionProposalRequestor extends CompletionRequestor {
 	public NewCompletionItem toCompletionItem(CompletionProposal proposal, int index) throws JavaModelException {
 		final var start = proposal.getReplaceStart();
 		final var end = proposal.getReplaceEnd();
+		final var completion = (hasArgumentList(proposal) ? 
+			new String(proposal.getName()) + "("
+			: new String(proposal.getCompletion())
+		);
+		
 		return new NewCompletionItem(
 			proposal.toString(),
 			source.substring(start, end),
-			new String(proposal.getCompletion()),
+			completion,
 			start,
 			end	
 		);
@@ -312,6 +317,18 @@ public final class NewCompletionProposalRequestor extends CompletionRequestor {
 		// }
 		// return $;
 	}
+
+
+	protected boolean hasArgumentList(CompletionProposal proposal) {
+		if (CompletionProposal.METHOD_NAME_REFERENCE == proposal.getKind()) {
+			return false;
+		} else if (CompletionProposal.LAMBDA_EXPRESSION == proposal.getKind()){
+			return true;
+		}
+		char[] completion= proposal.getCompletion();
+		return !context.isInJavadoc() && completion.length > 0 && completion[completion.length - 1] == ')';
+	}
+
 
 	@Override
 	public void acceptContext(CompletionContext context) {

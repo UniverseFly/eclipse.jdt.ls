@@ -45,6 +45,7 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.compiler.CategorizedProblem;
 import org.eclipse.jdt.core.manipulation.CoreASTProvider;
 import org.eclipse.jdt.internal.codeassist.impl.AssistOptions;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
@@ -266,6 +267,64 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 	}
 
 	@Test
+	public void testNewCompletion_badSyntax() throws Exception{
+		ICompilationUnit unit = getWorkingCopy(
+				"src/java/Foo.java",
+				"public class Foo {\n"+
+						"	void foo(int x) {\n"+
+						"		int xyz fo\n"+
+						"	}\n"+
+				"}\n");
+		var list = newRequestCompletions(unit, "xyz fo");
+		var astRoot = CoreASTProvider.getInstance().getAST(unit, CoreASTProvider.WAIT_YES, new NullProgressMonitor());
+		var problems = astRoot.getProblems();
+		assertNull(list);
+	}
+
+
+	@Test
+	public void testNewCompletion_badSemantics() throws Exception{
+		ICompilationUnit unit = getWorkingCopy(
+				"src/java/Foo.java",
+				"public class Foo {\n"+
+						"	void bar(int x, bool y) {}\n"+
+						"	void foo(int x) {\n"+
+						"		this.ba\n"+
+						"	}\n"+
+				"}\n");
+		var list = newRequestCompletions(unit, "this.ba");
+		var astRoot = CoreASTProvider.getInstance().getAST(unit, CoreASTProvider.WAIT_YES, new NullProgressMonitor());
+		var problems = astRoot.getProblems();
+		assertNull(list);
+	}
+
+	@Test
+	public void testNewCompletion_constructor() throws Exception{
+		ICompilationUnit unit = getWorkingCopy(
+				"src/java/Foo.java",
+				"public class Foo {\n"+
+						"	void foo(int x) {\n"+
+						"		Object o = new O\n"+
+						"	}\n"+
+				"}\n");
+		var list = newRequestCompletions(unit, "new O");
+		assertNull(list);
+	}
+	// @Test
+	// public void testCompletion_simpleMethod() throws Exception{
+	// 	ICompilationUnit unit = getWorkingCopy(
+	// 			"src/java/Foo.java",
+	// 			"public class Foo {\n"+
+	// 					"	void bar(int x, bool y) {}\n"+
+	// 					"	void foo(int x) {\n"+
+	// 					"		this.ba\n"+
+	// 					"	}\n"+
+	// 			"}\n");
+	// 	var list = requestCompletions(unit, "this.ba");
+	// 	assertNull(list);
+	// }
+
+	@Test
 	public void testNewCompletion_paren() throws Exception{
 		ICompilationUnit unit = getWorkingCopy(
 				"src/java/Foo.java",
@@ -275,6 +334,8 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 						"	}\n"+
 				"}\n");
 		var list = newRequestCompletions(unit, "if (");
+		var astRoot = CoreASTProvider.getInstance().getAST(unit, CoreASTProvider.WAIT_YES, new NullProgressMonitor());
+		var problems = astRoot.getProblems();
 		assertNull(list);
 	}
 
