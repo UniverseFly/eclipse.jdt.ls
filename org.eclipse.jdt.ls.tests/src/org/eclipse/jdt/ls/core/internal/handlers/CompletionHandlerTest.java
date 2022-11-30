@@ -271,11 +271,27 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 		ICompilationUnit unit = getWorkingCopy(
 				"src/java/Foo.java",
 				"public class Foo {\n"+
-						"	private static boolean check(Object \n" +
+						"	private static char[] x = /*abc" +
 				"}\n");
-		var list = newRequestCompletions(unit, "(Object ");
+		var list = newRequestCompletions(unit, "abc");
 		// var astRoot = CoreASTProvider.getInstance().getAST(unit, CoreASTProvider.WAIT_YES, new NullProgressMonitor());
 		// var problems = astRoot.getProblems();
+		assertNull(list);
+	}
+
+	// private static boolean !
+
+	@Test
+	public void testNewCompletion_methodNameDef() throws Exception{
+		ICompilationUnit unit = getWorkingCopy(
+				"src/java/Foo.java",
+				"public class Foo {\n"+
+						"	public static final boolean obj\n" +
+				"}\n");
+		// var astRoot = CoreASTProvider.getInstance().getAST(unit, CoreASTProvider.WAIT_YES, new NullProgressMonitor());
+		// var problems = astRoot.getProblems();
+		// assertNotNull(problems);
+		var list = newRequestCompletions(unit, "boolean obj");
 		assertNull(list);
 	}
 

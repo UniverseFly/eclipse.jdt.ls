@@ -340,7 +340,7 @@ public final class NewCompletionProposalRequestor extends CompletionRequestor {
 			// | completionNode instanceof CompletionOnClassLiteralAccess
 			// | completionNode instanceof CompletionOnContinueStatement
 			// | completionNode instanceof CompletionOnExplicitConstructorCall
-			// | completionNode instanceof CompletionOnFieldName
+			| completionNode instanceof CompletionOnFieldName
 			// | completionNode instanceof CompletionOnFieldType
 			// | completionNode instanceof CompletionOnImportReference
 			| completionNode instanceof CompletionOnJavadoc
