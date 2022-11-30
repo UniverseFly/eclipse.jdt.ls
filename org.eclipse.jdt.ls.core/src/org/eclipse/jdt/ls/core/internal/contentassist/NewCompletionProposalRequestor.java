@@ -335,7 +335,7 @@ public final class NewCompletionProposalRequestor extends CompletionRequestor {
 		var completionNode = ((InternalCompletionContext) context).getCompletionNode();
 		if (
 			completionNode instanceof CompletionOnAnnotationOfType
-			// | completionNode instanceof CompletionOnArgumentName
+			| completionNode instanceof CompletionOnArgumentName
 			// | completionNode instanceof CompletionOnBreakStatement
 			// | completionNode instanceof CompletionOnClassLiteralAccess
 			// | completionNode instanceof CompletionOnContinueStatement

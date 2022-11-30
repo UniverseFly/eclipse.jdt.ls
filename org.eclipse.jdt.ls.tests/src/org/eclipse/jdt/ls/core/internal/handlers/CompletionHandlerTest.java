@@ -267,6 +267,20 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 	}
 
 	@Test
+	public void testNewCompletion_methodDef() throws Exception{
+		ICompilationUnit unit = getWorkingCopy(
+				"src/java/Foo.java",
+				"public class Foo {\n"+
+						"	private static boolean check(Object \n" +
+				"}\n");
+		var list = newRequestCompletions(unit, "(Object ");
+		// var astRoot = CoreASTProvider.getInstance().getAST(unit, CoreASTProvider.WAIT_YES, new NullProgressMonitor());
+		// var problems = astRoot.getProblems();
+		assertNull(list);
+	}
+
+
+	@Test
 	public void testNewCompletion_badSyntax() throws Exception{
 		ICompilationUnit unit = getWorkingCopy(
 				"src/java/Foo.java",
