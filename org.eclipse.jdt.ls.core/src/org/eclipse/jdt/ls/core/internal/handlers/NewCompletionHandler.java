@@ -199,7 +199,7 @@ public class NewCompletionHandler{
 			if (buffer != null && buffer.getLength() >= offset) {
 				IProgressMonitor subMonitor = new ProgressMonitorWrapper(monitor) {
 					private long timeLimit;
-					private final long TIMEOUT = Long.getLong("completion.timeout", 5000);
+					private final long TIMEOUT = Long.getLong("completion.timeout", 1000);
 
 					@Override
 					public void beginTask(String name, int totalWork) {
@@ -214,7 +214,7 @@ public class NewCompletionHandler{
 				};
 				try {
 					if (isIndexEngineEnabled()) {
-						unit.codeComplete(offset, collector, (IProgressMonitor) null);
+						unit.codeComplete(offset, collector, subMonitor);
 					} else {
 						ModelBasedCompletionEngine.codeComplete(unit, offset, collector, DefaultWorkingCopyOwner.PRIMARY, subMonitor);
 					}
@@ -229,6 +229,7 @@ public class NewCompletionHandler{
 					// proposals.addAll(new JavadocCompletionProposal().getProposals(unit, offset, collector, subMonitor));
 				} catch (OperationCanceledException e) {
 					monitor.setCanceled(true);
+					return null;
 				}
 			}
 		}
