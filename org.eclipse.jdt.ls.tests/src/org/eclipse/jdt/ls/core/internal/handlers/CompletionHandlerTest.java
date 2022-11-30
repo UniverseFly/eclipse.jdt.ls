@@ -279,6 +279,23 @@ public class CompletionHandlerTest extends AbstractCompilationUnitBasedTest {
 		assertNull(list);
 	}
 
+	@Test
+	public void testNewCompletion_methodCall() throws Exception{
+		ICompilationUnit unit = getWorkingCopy(
+				"src/java/Foo.java",
+				"public class Foo {\n"+
+						"	private static boolean myBoolean = false;\n" +
+						"	private static void f(boolean b) {}\n" +
+						"	private static void g() {\n" +
+						"		f(myB\n" +
+						"	}\n" +
+				"}\n");
+		var list = newRequestCompletions(unit, "f(myB");
+		// var astRoot = CoreASTProvider.getInstance().getAST(unit, CoreASTProvider.WAIT_YES, new NullProgressMonitor());
+		// var problems = astRoot.getProblems();
+		assertNotNull(list);
+	}
+
 
 	@Test
 	public void testNewCompletion_badSyntax() throws Exception{
