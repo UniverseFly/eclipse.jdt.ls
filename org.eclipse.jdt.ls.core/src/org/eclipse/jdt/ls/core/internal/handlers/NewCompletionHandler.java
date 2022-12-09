@@ -219,6 +219,7 @@ public class NewCompletionHandler{
 						ModelBasedCompletionEngine.codeComplete(unit, offset, collector, DefaultWorkingCopyOwner.PRIMARY, subMonitor);
 					}
 					final var token = collector.getContext().getToken();
+					// token.length == 0 is for <CompletionOnName:"">
 					if (!collector.getIsContextValid() || token == null || token.length == 0) {
 						return null;
 					}
