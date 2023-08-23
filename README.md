@@ -10,7 +10,7 @@ Briefly speaking, a new language server request `newCompletion` is implemented t
 
 Clone the repository via `git clone` and build the project via `JAVA_HOME=/path/to/java/11 ./mvnw clean verify -DskipTests=true` to by-pass the tests. This command builds the server into the `./org.eclipse.jdt.ls.product/target/repository` folder.
 
-## Installation from source
+## Running from the command line
 
 `cd` into `./org.eclipse.jdt.ls.product/target/repository`.
 
