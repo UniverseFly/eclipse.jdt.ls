@@ -1,5 +1,7 @@
 # Eclipse JDT Language Server (Modified)
 
+[![DOI](https://zenodo.org/badge/567522061.svg)](https://zenodo.org/badge/latestdoi/567522061)
+
 This is a modified [Eclipse JDT Language Server](https://github.com/eclipse-jdtls/eclipse.jdt.ls) that only produces suggestions when it is confident that continuing the current valid program with one of the suggestions will result in a valid program.
 
 ## What are changed?
