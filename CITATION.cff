@@ -1,0 +1,25 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Modified Eclipse JDT LS
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - name: Eclipse Foundation
+  - given-names: Yuxiang
+    family-names: Wei
+    email: ywei40@illinois.edu
+    affiliation: University of Illinois at Urbana-Champaign
+    orcid: 'https://orcid.org/0000-0002-4391-3753'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.8278008
+abstract: >-
+  The modified Eclipse JDT LS provides a more conservative
+  autocompletion service in that it only suggests sound
+  completions: applying one of the completions should yield
+  another valid partial code sequence.
+license: EPL-2.0
